@@ -36,3 +36,7 @@ get_dir_and_date $1 $2
 clone_repo_if_not_exists $1
 commit_and_push_dummy
 update_date
+
+#TODO:
+# support date range -- if third param is present, perform dummy commits for date range $2 - $3
+# improve logs formatting -- add colors
