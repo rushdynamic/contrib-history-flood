@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# ANSI color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
 repo_url=$1
 start_date=$2
 end_date=$3
@@ -17,25 +24,26 @@ get_formatted_dates() {
             curr=$((curr + 86400))
         done
     fi
+    echo -e ">>${YELLOW} Finished formatting dates ${NC}"
 }
 
 get_git_repo_dir() {
     repo_name=$(echo $1 | awk -F'/' '{ print $NF }' | sed 's/\.git$//')
-    echo ">> Git repo dir: $repo_name"
+    echo -e ">>${YELLOW} Parsed Git repo directory: ${BLUE}$repo_name${NC}"
 }
 
 clone_repo_if_not_exists() {
     if [ -d $repo_name ]; then
-        echo ">> Git repo dir already exists, proceeding"
+        echo -e ">>${YELLOW} Git repo dir already exists, proceeding${NC}"
         true
     else
-        echo ">> Cloning repo"
+        echo -e ">>${YELLOW} Cloning repo...${NC}"
         git clone $1
     fi
-    cd $repo_name && echo ">> Inside Git dir"
+    cd $repo_name
 }
 
-commit_and_push_dummy() {
+create_dummy_commit() {
     rm "$date" > /dev/null 2>&1
     touch "$date.md"
     git add . > /dev/null && echo
@@ -48,17 +56,18 @@ update_date() {
 }
 
 push_changes() {
-    git push origin main -f > /dev/null && echo ">> Pushed final changes"
+    git push origin main -f > /dev/null
+    echo -e ">>${GREEN} SUCCESS!${NC}"
 }
 
 get_formatted_dates $start_date $end_date
 get_git_repo_dir $repo_url $start_date
 clone_repo_if_not_exists $repo_url
 for date in "${formatted_dates[@]}"; do
-    commit_and_push_dummy "$date" # make this fuzzy -- multiple commits per date
+    create_dummy_commit "$date" # make this fuzzy -- multiple commits per date
     update_date "$date"
 done
-echo ">> Created dummy files and updated dates"
+echo -e ">>${YELLOW} Created dummy commits for ${BLUE}${#formatted_dates[@]} ${YELLOW}dates${NC}"
 push_changes
 #TODO:
 # improve logs formatting -- add colors
