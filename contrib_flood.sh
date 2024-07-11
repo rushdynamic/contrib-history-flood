@@ -26,7 +26,7 @@ get_git_repo_dir() {
 
 clone_repo_if_not_exists() {
     if [ -d $repo_name ]; then
-        echo ">> Git repo dir already exists"
+        echo ">> Git repo dir already exists, proceeding"
         true
     else
         echo ">> Cloning repo"
@@ -36,15 +36,18 @@ clone_repo_if_not_exists() {
 }
 
 commit_and_push_dummy() {
-    rm README.md
-    touch README.md
-    git add . > /dev/null && echo ">> Added files"
-    git commit -m "test commit" > /dev/null && echo ">> Created commit"
+    rm "$date" > /dev/null 2>&1
+    touch "$date.md"
+    git add . > /dev/null && echo
+    git commit -m "test commit" > /dev/null
 }
 
 update_date() {
-    git commit --amend --date="$1" --no-edit > /dev/null && echo ">> Updated author date"
-    GIT_COMMITTER_DATE="$1" git commit --amend --no-edit > /dev/null && echo ">> Updated committer date"
+    git commit --amend --date="$1" --no-edit > /dev/null
+    GIT_COMMITTER_DATE="$1" git commit --amend --no-edit > /dev/null
+}
+
+push_changes() {
     git push origin main -f > /dev/null && echo ">> Pushed final changes"
 }
 
@@ -52,10 +55,10 @@ get_formatted_dates $start_date $end_date
 get_git_repo_dir $repo_url $start_date
 clone_repo_if_not_exists $repo_url
 for date in "${formatted_dates[@]}"; do
-    commit_and_push_dummy
+    commit_and_push_dummy "$date" # make this fuzzy -- multiple commits per date
     update_date "$date"
 done
-
+echo ">> Created dummy files and updated dates"
+push_changes
 #TODO:
-# support date range -- if third param is present, perform dummy commits for date range $2 - $3
 # improve logs formatting -- add colors
