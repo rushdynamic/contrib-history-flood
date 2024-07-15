@@ -7,10 +7,45 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-repo_url=$1
-start_date=$2
-end_date=$3
+repo_url=
+start_date=
+end_date=
+fuzzy=false
 formatted_dates=()
+
+usage() {
+    echo "Usage: $0 -r <required> -s <required> [-e <optional>] [--fuzzy <optional>]"
+    exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -r)
+            repo_url="$2"
+            shift 2
+            ;;
+        -s)
+            start_date="$2"
+            shift 2
+            ;;
+        -e)
+            end_date="$2"
+            shift 2
+            ;;
+        --fuzzy)
+            fuzzy=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            usage
+            break
+            ;;
+    esac
+done
 
 get_formatted_dates() {
     if [ -z "$2" ]; then
@@ -60,6 +95,11 @@ push_changes() {
     echo -e ">>${GREEN} SUCCESS!${NC}"
 }
 
+# Exit when invalid args
+if [ -z "$repo_url" ] || [ -z "$start_date" ]; then
+    usage
+fi
+
 get_formatted_dates $start_date $end_date
 get_git_repo_dir $repo_url $start_date
 clone_repo_if_not_exists $repo_url
@@ -70,4 +110,5 @@ done
 echo -e ">>${YELLOW} Created dummy commits for ${BLUE}${#formatted_dates[@]} ${YELLOW}dates${NC}"
 push_changes
 #TODO:
-# improve logs formatting -- add colors
+# add options to commandline args
+# add an option --fuzzy for fuzzy date picking
