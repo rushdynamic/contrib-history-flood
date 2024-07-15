@@ -79,8 +79,11 @@ clone_repo_if_not_exists() {
 }
 
 create_dummy_commit() {
-    rm "$date" > /dev/null 2>&1
-    touch "$date.md"
+    local counter=0
+    while [[ -e "$date.md" || -e "$date$counter.md" ]]; do
+        (( counter++ ))
+    done
+    touch "$date$counter.md"
     git add . > /dev/null && echo
     git commit -m "test commit" > /dev/null
 }
