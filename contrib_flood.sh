@@ -14,7 +14,15 @@ fuzzy=false
 formatted_dates=()
 
 usage() {
-    echo "Usage: $0 -r <required> -s <required> [-e <optional>] [--fuzzy <optional>]"
+    cat << "EOF"
+Usage: ./contrib_flood.sh -r <repo_url> -s <start_date> [-e <end_date>] [--fuzzy]
+
+Options:
+  -r <repo_url>     Repository URL (required).
+  -s <start_date>   Start date in the format `dd-mm-yyyy` (required).
+  -e <end_date>     End date in the format `dd-mm-yyyy` for using a date-range (optional).
+  --fuzzy           Enable fuzzy date selection from given range (optional).
+EOF
     exit 1
 }
 
@@ -63,13 +71,17 @@ get_formatted_dates() {
 }
 
 get_fuzzy_dates() {
-    echo -e ">>${BLUE} Fuzzy mode enabled${NC}"
-    while read -r idx; do
-        indices+=("$idx")
-    done <<< "$(jot -r $(jot -r 1 0 $(( ${#formatted_dates[@]} - 2 ))) 0 $(( ${#formatted_dates[@]} - 1 )))"
-    for index in "${indices[@]}"; do
-        unset 'formatted_dates[index]'
-    done
+    if [ ${#formatted_dates[@]} -gt 1 ]; then
+        echo -e ">>${BLUE} Fuzzy mode enabled${NC}"
+        while read -r idx; do
+            indices+=("$idx")
+        done <<< "$(jot -r $(jot -r 1 0 $(( ${#formatted_dates[@]} - 2 ))) 0 $(( ${#formatted_dates[@]} - 1 )))"
+        for index in "${indices[@]}"; do
+            unset 'formatted_dates[index]'
+        done
+    else
+        echo -e ">>${RED} Fuzzy mode is only supported for a date range${NC}"
+    fi
 }
 
 get_git_repo_dir() {
@@ -105,7 +117,11 @@ update_date() {
 
 push_changes() {
     git push origin main -f > /dev/null
-    echo -e ">>${GREEN} SUCCESS!${NC}"
+    if [ $? -eq 0 ]; then
+        echo -e ">>${GREEN} SUCCESS!${NC}"
+    else
+        echo -e ">>${RED} FAILURE!${NC}"
+    fi
 }
 
 # Exit when invalid args
