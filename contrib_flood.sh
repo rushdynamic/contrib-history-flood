@@ -62,6 +62,16 @@ get_formatted_dates() {
     echo -e ">>${YELLOW} Finished formatting dates ${NC}"
 }
 
+get_fuzzy_dates() {
+    echo -e ">>${BLUE} Fuzzy mode enabled${NC}"
+    while read -r idx; do
+        indices+=("$idx")
+    done <<< "$(jot -r $(jot -r 1 0 $(( ${#formatted_dates[@]} - 2 ))) 0 $(( ${#formatted_dates[@]} - 1 )))"
+    for index in "${indices[@]}"; do
+        unset 'formatted_dates[index]'
+    done
+}
+
 get_git_repo_dir() {
     repo_name=$(echo $1 | awk -F'/' '{ print $NF }' | sed 's/\.git$//')
     echo -e ">>${YELLOW} Parsed Git repo directory: ${BLUE}$repo_name${NC}"
@@ -84,7 +94,7 @@ create_dummy_commit() {
         (( counter++ ))
     done
     touch "$date$counter.md"
-    git add . > /dev/null && echo
+    git add . > /dev/null
     git commit -m "test commit" > /dev/null
 }
 
@@ -106,12 +116,12 @@ fi
 get_formatted_dates $start_date $end_date
 get_git_repo_dir $repo_url $start_date
 clone_repo_if_not_exists $repo_url
+if [ "$fuzzy" = true ]; then
+    get_fuzzy_dates
+fi
 for date in "${formatted_dates[@]}"; do
     create_dummy_commit "$date" # make this fuzzy -- multiple commits per date
     update_date "$date"
 done
 echo -e ">>${YELLOW} Created dummy commits for ${BLUE}${#formatted_dates[@]} ${YELLOW}dates${NC}"
 push_changes
-#TODO:
-# add options to commandline args
-# add an option --fuzzy for fuzzy date picking
