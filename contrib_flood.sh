@@ -134,9 +134,17 @@ clone_repo_if_not_exists $repo_url
 if [ "$fuzzy" = true ]; then
     get_fuzzy_dates
 fi
+echo -e ">>${YELLOW} Creating dummy commits for ${BLUE}${#formatted_dates[@]} ${YELLOW}dates, this might take a while...${NC}"
 for date in "${formatted_dates[@]}"; do
-    create_dummy_commit "$date"
-    update_date "$date"
+    if [ "$fuzzy" = true ]; then
+        repeat_times=$(jot -r 1 1 15)
+    else
+        repeat_times=1
+    fi
+    for (( i=0; i<$repeat_times; i++)); do
+        create_dummy_commit "$date"
+        update_date "$date"
+    done
 done
-echo -e ">>${YELLOW} Created dummy commits for ${BLUE}${#formatted_dates[@]} ${YELLOW}dates${NC}"
+echo -e ">>${YELLOW} Pushing changes...${NC}"
 push_changes
