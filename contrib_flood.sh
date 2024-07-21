@@ -50,7 +50,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             usage
-            break
             ;;
     esac
 done
@@ -62,7 +61,7 @@ get_formatted_dates() {
         start_sec=$(date -j -f "%d-%m-%Y" "$1" +"%s")
         end_sec=$(date -j -f "%d-%m-%Y" "$2" +"%s")
         curr=$start_sec
-        while [ $curr -le $end_sec ]; do
+        while [ "$curr" -le "$end_sec" ]; do
             formatted_dates+=("$(date -j -f "%s" "$curr" +"%a %b %d %H:%M %Y %z")")
             curr=$((curr + 86400))
         done
@@ -85,19 +84,19 @@ get_fuzzy_dates() {
 }
 
 get_git_repo_dir() {
-    repo_name=$(echo $1 | awk -F'/' '{ print $NF }' | sed 's/\.git$//')
+    repo_name=$(echo "$1" | awk -F'/' '{ print $NF }' | sed 's/\.git$//')
     echo -e ">>${YELLOW} Parsed Git repo directory: ${BLUE}$repo_name${NC}"
 }
 
 clone_repo_if_not_exists() {
-    if [ -d $repo_name ]; then
+    if [ -d "$repo_name" ]; then
         echo -e ">>${YELLOW} Git repo dir already exists, proceeding${NC}"
         true
     else
         echo -e ">>${YELLOW} Cloning repo...${NC}"
-        git clone $1
+        git clone "$1"
     fi
-    cd $repo_name
+    cd "$repo_name"
 }
 
 create_dummy_commit() {
@@ -128,9 +127,9 @@ push_changes() {
 if [ -z "$repo_url" ] || [ -z "$start_date" ]; then
     usage
 fi
-get_formatted_dates $start_date $end_date
-get_git_repo_dir $repo_url $start_date
-clone_repo_if_not_exists $repo_url
+get_formatted_dates "$start_date" "$end_date"
+get_git_repo_dir "$repo_url" "$start_date"
+clone_repo_if_not_exists "$repo_url"
 if [ "$fuzzy" = true ]; then
     get_fuzzy_dates
 fi
