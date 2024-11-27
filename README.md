@@ -29,7 +29,7 @@ Options:
 Example:
 
 ```
-./contrib_flood.sh https://github.com/rushdynamic/dummy-repo.git -s 01-01-2019 -e 31-12-2019 --fuzzy
+./contrib_flood.sh -r https://github.com/rushdynamic/dummy-repo.git -s 01-01-2019 -e 31-12-2019 --fuzzy
 ```
 
 NOTE: Verify that your terminal instance is configured to use your appropriate GitHub credentials by running `git config --list` first.
